@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const Register = () => {
     confirmPassword: '',
     subscribe: false
   });
+  const { login } = useUser();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -25,14 +27,19 @@ const Register = () => {
       alert('Passwords do not match!');
       return;
     }
-    console.log('Registration attempt:', formData);
+    // Mock registration - in real app, this would call an API
+    const userData = {
+      fullName: formData.fullName,
+      email: formData.email,
+      id: '1'
+    };
+    login(userData);
     navigate('/');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 md:p-10">
-        {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">
             <span className="text-blue-600">LUXURY</span>
@@ -41,7 +48,6 @@ const Register = () => {
           <h2 className="text-2xl font-semibold mt-6 text-gray-800">Create an Account</h2>
         </div>
 
-        {/* Registration Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -122,7 +128,6 @@ const Register = () => {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -133,7 +138,6 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Google Button */}
           <button className="w-full mt-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-3 shadow-sm hover:shadow-md">
             <svg className="w-5 h-5" viewBox="0 0 48 48">
               <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
@@ -145,7 +149,6 @@ const Register = () => {
           </button>
         </div>
 
-        {/* Login Link */}
         <p className="text-center mt-6 text-sm text-gray-600">
           Already have an account?{' '}
           <Link to="/login" className="text-blue-600 hover:text-blue-800 font-semibold">
