@@ -1,12 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 
-const DashboardSidebar = ({ activePage }) => {
+const DashboardSidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useUser();
 
   const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: '📊', path: '/dashboard' },
     { id: 'profile', label: 'My Profile', icon: '👤', path: '/dashboard/profile' },
     { id: 'bookings', label: 'My Bookings', icon: '📅', path: '/dashboard/bookings' },
     { id: 'testdrives', label: 'My Test Drives', icon: '🚗', path: '/dashboard/test-drives' },
@@ -20,6 +22,10 @@ const DashboardSidebar = ({ activePage }) => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path;
   };
 
   return (
@@ -44,7 +50,7 @@ const DashboardSidebar = ({ activePage }) => {
               <button
                 onClick={() => navigate(item.path)}
                 className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors flex items-center gap-3 ${
-                  activePage === item.id 
+                  isActive(item.path) 
                     ? 'bg-blue-50 text-blue-600 font-medium' 
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}

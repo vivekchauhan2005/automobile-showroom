@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './context/UserContext';
+ 
 import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
@@ -11,20 +12,22 @@ import Contact from './pages/Contact/Contact';
 import About from './pages/About/About';
 import Compare from './pages/Compare/Compare';
 import Dashboard from './pages/Dashboard/Dashboard';
-import MyProfile from './pages/Dashboard/MyProfile';
-import MyBookings from './pages/Dashboard/MyBookings';
-import MyTestDrives from './pages/Dashboard/MyTestDrives';
-import MyFavorites from './pages/Dashboard/MyFavorites';
-import MyInquiries from './pages/Dashboard/MyInquiries';
-import PaymentHistory from './pages/Dashboard/PaymentHistory';
-import Notifications from './pages/Dashboard/Notifications';
-import Settings from './pages/Dashboard/Settings';
+ 
+import MyProfile from './components/Dashboard/MyProfile';
+import MyBookings from './components/Dashboard/MyBookings';
+import MyTestDrives from './components/Dashboard/MyTestDrives';
+import MyFavorites from './components/Dashboard/MyFavorites';
+import MyInquiries from './components/Dashboard/MyInquiries';
+import PaymentHistory from './components/Dashboard/PaymentHistory';
+import Notifications from './components/Dashboard/Notifications';
+import Settings from './components/Dashboard/Settings';
 
 function App() {
   return (
     <UserProvider>
       <Router>
         <Routes>
+          {/* Main Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -34,6 +37,8 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/compare" element={<Compare />} />
+          
+          {/* Dashboard Routes */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/profile" element={<MyProfile />} />
           <Route path="/dashboard/bookings" element={<MyBookings />} />

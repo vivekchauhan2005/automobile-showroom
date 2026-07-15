@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import Navbar from '../../components/Navbar/Navbar';
-import Footer from '../../components/Footer/Footer';
-import DashboardSidebar from '../../pages/Dashboard/DashboardSidebar';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../Navbar/Navbar';
+import Footer from '../Footer/Footer';
+import DashboardSidebar from './DashboardSidebar';
 
 const MyInquiries = () => {
+  const navigate = useNavigate();
   const [inquiries] = useState([
     {
       id: 1,
@@ -44,11 +46,19 @@ const MyInquiries = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <DashboardSidebar activePage="inquiries" />
+          <DashboardSidebar />
           
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">My Inquiries</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">My Inquiries</h2>
+                <button 
+                  onClick={() => navigate('/dashboard')}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  ← Back to Dashboard
+                </button>
+              </div>
               
               <div className="space-y-4">
                 {inquiries.map((inquiry) => (

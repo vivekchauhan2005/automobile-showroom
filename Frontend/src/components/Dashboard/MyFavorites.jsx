@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../components/Navbar/Navbar';
-import Footer from '../../components/Footer/Footer';
-import DashboardSidebar from '../../pages/Dashboard/DashboardSidebar';
+import Navbar from '../Navbar/Navbar';
+import Footer from '../Footer/Footer';
+import DashboardSidebar from './DashboardSidebar';
 
 const MyFavorites = () => {
   const navigate = useNavigate();
   const [favorites] = useState([
-    { id: 1, name: 'Porsche 911 Carrera', price: '$179,990', year: '2024', image: '🚗' },
-    { id: 2, name: 'Mercedes S-Class', price: '$253,990', year: '2024', image: '🚗' },
-    { id: 3, name: 'Audi Q7', price: '$169,990', year: '2024', image: '🚗' },
-    { id: 4, name: 'Tesla Model S', price: '$199,990', year: '2024', image: '🚗' },
-    { id: 5, name: 'Lexus LS', price: '$189,990', year: '2024', image: '🚗' }
+    { id: 1, name: 'Porsche 911 Carrera', price: '$179,990', year: '2024' },
+    { id: 2, name: 'Mercedes S-Class', price: '$253,990', year: '2024' },
+    { id: 3, name: 'Audi Q7', price: '$169,990', year: '2024' },
+    { id: 4, name: 'Tesla Model S', price: '$199,990', year: '2024' },
+    { id: 5, name: 'Lexus LS', price: '$189,990', year: '2024' }
   ]);
 
   const [favoriteIds, setFavoriteIds] = useState([1, 2, 3, 4, 5]);
@@ -27,18 +27,26 @@ const MyFavorites = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <DashboardSidebar activePage="favorites" />
+          <DashboardSidebar />
           
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">My Favorites</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">My Favorites</h2>
+                <button 
+                  onClick={() => navigate('/dashboard')}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  ← Back to Dashboard
+                </button>
+              </div>
               
               {filteredFavorites.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {filteredFavorites.map((car) => (
                     <div key={car.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-4">
-                        <div className="text-4xl">{car.image}</div>
+                        <div className="text-4xl">🚗</div>
                         <div className="flex-1">
                           <h3 className="font-semibold">{car.name}</h3>
                           <p className="text-sm text-gray-500">{car.year}</p>
