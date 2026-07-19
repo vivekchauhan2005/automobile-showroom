@@ -1,87 +1,53 @@
 import React from 'react';
-import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
-import AdminLayout from './layouts/AdminLayout';
-import AdminLogin from './pages/Login/AdminLogin';
-import AdminDashboard from './pages/Dashboard/AdminDashboard';
-import VehicleList from './pages/Vehicles/VehicleList';
-import AddVehicle from './pages/Vehicles/AddVehicle';
-import EditVehicle from './pages/Vehicles/EditVehicle';
-import CategoryList from './pages/Categories/CategoryList';
-import AddCategory from './pages/Categories/AddCategory';
-import CustomerList from './pages/Customers/CustomerList';
-import BookingList from './pages/Bookings/BookingList';
-import TestDriveList from './pages/TestDrives/TestDriveList';
-import ReviewList from './pages/Reviews/ReviewList';
-import PaymentList from './pages/Payments/PaymentList';
-import AnalyticsDashboard from './pages/Analytics/AnalyticsDashboard';
-import AdminSettings from './pages/Settings/AdminSettings';
-import AdminProfile from './pages/Profile/AdminProfile';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { UserProvider } from './context/UserContext';
+import Home from './pages/Home/Home';
+import Login from './pages/Login/Login';
+import Register from './pages/Register/Register';
+import Vehicles from './pages/Vehicles/Vehicles';
+import VehicleDetails from './pages/VehicleDetails/VehicleDetails';
+import TestDrive from './pages/TestDrive/TestDrive';
+import Contact from './pages/Contact/Contact';
+import About from './pages/About/About';
+import Compare from './pages/Compare/Compare';
+import Dashboard from './pages/Dashboard/Dashboard';
 
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAdminAuth();
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-500">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
-  }
-  
-  return children;
-};
+// Import all dashboard components from components folder
+import MyProfile from './components/Dashboard/MyProfile';
+import MyBookings from './components/Dashboard/MyBookings';
+import MyTestDrives from './components/Dashboard/MyTestDrives';
+import MyFavorites from './components/Dashboard/MyFavorites';
+import MyInquiries from './components/Dashboard/MyInquiries';
+import PaymentHistory from './components/Dashboard/PaymentHistory';
+import Notifications from './components/Dashboard/Notifications';
+import Settings from './components/Dashboard/Settings';
 
 function App() {
   return (
-    <AdminAuthProvider>
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <Toaster position="top-right" />
+    <UserProvider>
+      <Router>
         <Routes>
-          {/* Login Route */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="vehicles" element={<VehicleList />} />
-            <Route path="vehicles/add" element={<AddVehicle />} />
-            <Route path="vehicles/edit/:id" element={<EditVehicle />} />
-            <Route path="categories" element={<CategoryList />} />
-            <Route path="categories/add" element={<AddCategory />} />
-            <Route path="customers" element={<CustomerList />} />
-            <Route path="bookings" element={<BookingList />} />
-            <Route path="test-drives" element={<TestDriveList />} />
-            <Route path="reviews" element={<ReviewList />} />
-            <Route path="payments" element={<PaymentList />} />
-            <Route path="analytics" element={<AnalyticsDashboard />} />
-            <Route path="settings" element={<AdminSettings />} />
-            <Route path="profile" element={<AdminProfile />} />
-          </Route>
-          
-         
-          <Route path="*" element={<Navigate to="/admin/login" replace />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/vehicles" element={<Vehicles />} />
+          <Route path="/vehicle/:id" element={<VehicleDetails />} />
+          <Route path="/test-drive" element={<TestDrive />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/compare" element={<Compare />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/profile" element={<MyProfile />} />
+          <Route path="/dashboard/bookings" element={<MyBookings />} />
+          <Route path="/dashboard/test-drives" element={<MyTestDrives />} />
+          <Route path="/dashboard/favorites" element={<MyFavorites />} />
+          <Route path="/dashboard/inquiries" element={<MyInquiries />} />
+          <Route path="/dashboard/payment" element={<PaymentHistory />} />
+          <Route path="/dashboard/notifications" element={<Notifications />} />
+          <Route path="/dashboard/settings" element={<Settings />} />
         </Routes>
-      </BrowserRouter>
-    </AdminAuthProvider>
+      </Router>
+    </UserProvider>
   );
 }
 
