@@ -1,38 +1,33 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-require("dotenv").config();
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const connectDB = require('./config/db');
+const errorHandler = require('./middleware/errorMiddleware');
 
-const vehicleRoutes = require("./routes/vehicleRoutes");
+dotenv.config();
+connectDB();
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Test Route
-app.get("/", (req, res) => {
-  res.send("Automobile Showroom API is running...");
+app.get('/', (req, res) => {
+  res.json({ message: 'Luxury Motors API is running...' });
 });
 
-// API Routes
-app.use("/api/vehicles", vehicleRoutes);
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/vehicles', require('./routes/vehicleRoutes'));
+app.use('/api/bookings', require('./routes/bookingRoutes'));
+app.use('/api/test-drives', require('./routes/testDriveRoutes'));
+app.use('/api/enquiries', require('./routes/enquiryRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
-// Check if .env is loading
-console.log("MONGO_URI:", process.env.MONGO_URI);
+app.use(errorHandler);
 
-// Database Connection
 const PORT = process.env.PORT || 5000;
-
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("✅ Connected to MongoDB");
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ Database connection error:", err);
-  });
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
