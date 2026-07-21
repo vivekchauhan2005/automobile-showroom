@@ -5,6 +5,11 @@ const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorMiddleware');
 
 dotenv.config();
+
+// Debug: Check if .env is loaded
+console.log("MONGO_URI =", process.env.MONGO_URI);
+
+// Connect to MongoDB
 connectDB();
 
 const app = express();
@@ -28,6 +33,7 @@ app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
