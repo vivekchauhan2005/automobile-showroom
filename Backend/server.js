@@ -6,10 +6,9 @@ const errorHandler = require('./middleware/errorMiddleware');
 
 dotenv.config();
 
-// Debug: Check if .env is loaded
+ 
 console.log("MONGO_URI =", process.env.MONGO_URI);
-
-// Connect to MongoDB
+ 
 connectDB();
 
 const app = express();

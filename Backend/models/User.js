@@ -43,6 +43,36 @@ const userSchema = new mongoose.Schema({
   googleId: {
     type: String
   },
+  // Activity Tracking
+  lastLogin: {
+    type: Date
+  },
+  loginCount: {
+    type: Number,
+    default: 0
+  },
+  activities: [{
+    type: {
+      type: String,
+      enum: ['login', 'logout', 'booking', 'test_drive', 'enquiry', 'wishlist', 'profile_update', 'password_change']
+    },
+    description: String,
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    details: mongoose.Schema.Types.Mixed
+  }],
+  preferences: {
+    newsletter: {
+      type: Boolean,
+      default: false
+    },
+    notifications: {
+      type: Boolean,
+      default: true
+    }
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
   createdAt: {
@@ -61,6 +91,16 @@ userSchema.pre('save', async function(next) {
 
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
-}
+};
+
+userSchema.methods.addActivity = function(type, description, details = {}) {
+  this.activities.push({
+    type,
+    description,
+    details,
+    timestamp: new Date()
+  });
+  return this.save();
+};
 
 module.exports = mongoose.model('User', userSchema);
