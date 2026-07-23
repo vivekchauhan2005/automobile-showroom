@@ -1,16 +1,22 @@
 const User = require('../models/User');
 const { generateToken } = require('../utils/jwt');
-const { sendWelcomeEmail } = require('../utils/email');
 
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password, phone, address } = req.body;
 
+    if (!fullName || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide fullName, email and password'
+      });
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'User already exists' 
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
       });
     }
 
@@ -18,19 +24,16 @@ exports.register = async (req, res) => {
       fullName,
       email,
       password,
-      phone,
-      address,
+      phone: phone || '',
+      address: address || '',
       role: email === 'admin@luxurymotors.com' ? 'admin' : 'customer'
     });
 
-    // Add registration activity
     await user.addActivity(
       'login',
       'User registered successfully',
-      { email: user.email, method: 'email' }
+      { email: user.email }
     );
-
-    await sendWelcomeEmail(email, fullName);
 
     const token = generateToken(user._id);
 
@@ -46,13 +49,14 @@ exports.register = async (req, res) => {
         address: user.address,
         loginCount: user.loginCount,
         lastLogin: user.lastLogin,
-        activities: user.activities.slice(0, 5)
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    console.error('Register error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Registration failed'
     });
   }
 };
@@ -61,29 +65,35 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email and password'
+      });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
       });
     }
 
     const isPasswordMatch = await user.matchPassword(password);
     if (!isPasswordMatch) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid email or password' 
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
       });
     }
 
-    // Update login tracking
     user.lastLogin = new Date();
-    user.loginCount += 1;
+    user.loginCount = (user.loginCount || 0) + 1;
     await user.addActivity(
       'login',
       'User logged in successfully',
-      { email: user.email, loginCount: user.loginCount }
+      { email: user.email }
     );
     await user.save();
 
@@ -101,13 +111,14 @@ exports.login = async (req, res) => {
         address: user.address,
         loginCount: user.loginCount,
         lastLogin: user.lastLogin,
-        activities: user.activities.slice(0, 5)
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Login failed'
     });
   }
 };
@@ -115,81 +126,84 @@ exports.login = async (req, res) => {
 exports.logout = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    await user.addActivity(
-      'logout',
-      'User logged out successfully',
-      { email: user.email }
-    );
-    await user.save();
-
-    res.json({ 
-      success: true, 
-      message: 'Logged out successfully' 
+    if (user) {
+      await user.addActivity(
+        'logout',
+        'User logged out successfully',
+        { email: user.email }
+      );
+    }
+    res.json({
+      success: true,
+      message: 'Logged out successfully'
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
 
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id)
-      .select('-password')
-      .populate({
-        path: 'activities',
-        options: { sort: { timestamp: -1 }, limit: 10 }
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
-
-    res.json({ 
-      success: true, 
-      user: {
-        ...user.toObject(),
-        recentActivities: user.activities.slice(0, 10)
-      }
+    }
+    res.json({
+      success: true,
+      user
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { fullName, phone, address, preferences } = req.body;
+    const { fullName, phone, address } = req.body;
     const user = await User.findById(req.user.id);
 
-    const updates = {};
-    if (fullName) updates.fullName = fullName;
-    if (phone) updates.phone = phone;
-    if (address) updates.address = address;
-    if (preferences) updates.preferences = preferences;
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      updates,
-      { new: true, runValidators: true }
-    ).select('-password');
+    if (fullName) user.fullName = fullName;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
 
     await user.addActivity(
       'profile_update',
       'Profile updated successfully',
-      { updatedFields: Object.keys(updates) }
+      { updatedFields: Object.keys(req.body) }
     );
     await user.save();
 
     res.json({
       success: true,
-      user: updatedUser
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        address: user.address
+      }
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
@@ -199,11 +213,18 @@ exports.changePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const user = await User.findById(req.user.id);
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     const isPasswordMatch = await user.matchPassword(currentPassword);
     if (!isPasswordMatch) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Current password is incorrect' 
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
       });
     }
 
@@ -215,35 +236,35 @@ exports.changePassword = async (req, res) => {
     );
     await user.save();
 
-    res.json({ 
-      success: true, 
-      message: 'Password changed successfully' 
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
 
 exports.getUserActivities = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id)
-      .select('activities')
-      .populate({
-        path: 'activities',
-        options: { sort: { timestamp: -1 }, limit: 50 }
+    const user = await User.findById(req.user.id).select('activities');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
-
+    }
     res.json({
       success: true,
-      activities: user.activities
+      activities: user.activities || []
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
@@ -251,12 +272,17 @@ exports.getUserActivities = async (req, res) => {
 exports.getDashboardStats = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     const stats = {
-      loginCount: user.loginCount,
+      loginCount: user.loginCount || 0,
       lastLogin: user.lastLogin,
-      totalActivities: user.activities.length,
-      recentActivities: user.activities.slice(0, 5),
+      totalActivities: user.activities ? user.activities.length : 0,
       accountAge: Math.floor((Date.now() - user.createdAt) / (1000 * 60 * 60 * 24))
     };
 
@@ -265,9 +291,9 @@ exports.getDashboardStats = async (req, res) => {
       stats
     });
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };

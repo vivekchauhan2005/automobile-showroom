@@ -87,8 +87,7 @@ exports.updateTestDriveStatus = async (req, res) => {
 
     testDrive.status = status;
     await testDrive.save();
-
-    // If user exists, add activity
+ 
     if (testDrive.user) {
       const user = await User.findById(testDrive.user);
       if (user) {
@@ -112,6 +111,25 @@ exports.updateTestDriveStatus = async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: error.message 
+    });
+  }
+};
+exports.getAllTestDrives = async (req, res) => {
+  try {
+    const testDrives = await TestDrive.find()
+      .populate("vehicle", "name brand")
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: testDrives.length,
+      testDrives,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };

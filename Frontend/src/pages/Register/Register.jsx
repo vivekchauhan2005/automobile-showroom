@@ -8,9 +8,13 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    phone: '',
+    address: '',
     subscribe: false
   });
-  const { login } = useUser();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { register } = useUser();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -21,20 +25,34 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      setError('Passwords do not match!');
       return;
     }
-    // Mock registration - in real app, this would call an API
-    const userData = {
-      fullName: formData.fullName,
-      email: formData.email,
-      id: '1'
-    };
-    login(userData);
-    navigate('/');
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { confirmPassword, subscribe, ...userData } = formData;
+      const result = await register(userData);
+      
+      if (result.success) {
+        navigate('/');
+      }
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,12 +64,19 @@ const Register = () => {
             <span className="text-gray-800"> MOTORS</span>
           </h1>
           <h2 className="text-2xl font-semibold mt-6 text-gray-800">Create an Account</h2>
+          <p className="text-sm text-gray-500 mt-2">Join us and start your luxury journey</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600 text-center">{error}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Full Name
+              Full Name *
             </label>
             <input
               type="text"
@@ -66,7 +91,7 @@ const Register = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Email Address
+              Email Address *
             </label>
             <input
               type="email"
@@ -81,7 +106,7 @@ const Register = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Password
+              Password *
             </label>
             <input
               type="password"
@@ -89,14 +114,14 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-gray-50"
-              placeholder="Create a password"
+              placeholder="Create a password (min 6 characters)"
               required
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Confirm Password
+              Confirm Password *
             </label>
             <input
               type="password"
@@ -106,6 +131,34 @@ const Register = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-gray-50"
               placeholder="Confirm your password"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-gray-50"
+              placeholder="Enter your phone number"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Address
+            </label>
+            <input
+              type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-gray-50"
+              placeholder="Enter your address"
             />
           </div>
 
@@ -122,9 +175,10 @@ const Register = () => {
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg mt-2"
+            disabled={loading}
+            className="w-full py-3.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            REGISTER
+            {loading ? 'Creating Account...' : 'REGISTER'}
           </button>
         </form>
 
@@ -153,6 +207,17 @@ const Register = () => {
           Already have an account?{' '}
           <Link to="/login" className="text-blue-600 hover:text-blue-800 font-semibold">
             Login
+          </Link>
+        </p>
+
+        <p className="text-center mt-4 text-xs text-gray-400">
+          By registering, you agree to our{' '}
+          <Link to="/terms" className="text-blue-600 hover:text-blue-800">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link to="/privacy" className="text-blue-600 hover:text-blue-800">
+            Privacy Policy
           </Link>
         </p>
       </div>

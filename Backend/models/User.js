@@ -21,11 +21,13 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   address: {
     type: String,
-    trim: true
+    trim: true,
+    default: ''
   },
   role: {
     type: String,
@@ -43,7 +45,6 @@ const userSchema = new mongoose.Schema({
   googleId: {
     type: String
   },
-  // Activity Tracking
   lastLogin: {
     type: Date
   },
@@ -74,26 +75,29 @@ const userSchema = new mongoose.Schema({
     }
   },
   resetPasswordToken: String,
-  resetPasswordExpire: Date,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  resetPasswordExpire: Date
+}, {
+  timestamps: true
 });
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-userSchema.methods.addActivity = function(type, description, details = {}) {
+userSchema.methods.addActivity = async function(type, description, details = {}) {
   this.activities.push({
     type,
     description,

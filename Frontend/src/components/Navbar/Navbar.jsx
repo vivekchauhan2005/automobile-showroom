@@ -12,13 +12,11 @@ const Navbar = () => {
   const navItems = [
     { label: 'Home', path: '/' },
     { label: 'Inventory', path: '/vehicles' },
-    { label: 'Brand', path: '/brand' },
-    { label: 'Finance', path: '/finance' },
     { label: 'Test Drive', path: '/test-drive' },
     { label: 'Contact', path: '/contact' },
+    { label: 'About', path: '/about' },
   ];
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -40,11 +38,15 @@ const Navbar = () => {
     navigate('/dashboard');
   };
 
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.charAt(0).toUpperCase();
+  };
+
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20">
-          {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="text-2xl font-bold text-gray-900">
               <span className="text-blue-600">LUXURY</span>
@@ -52,7 +54,6 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -65,7 +66,6 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Desktop Right Icons */}
           <div className="hidden lg:flex items-center space-x-4">
             <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,30 +81,28 @@ const Navbar = () => {
               </span>
             </button>
             
-            {/* Profile Dropdown */}
-            {isAuthenticated ? (
+            {isAuthenticated && user ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                    {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    {getInitials(user.fullName)}
                   </div>
                   <span className="text-sm font-medium text-gray-700 hidden xl:inline">
-                    {user?.fullName || 'User'}
+                    {user.fullName || 'User'}
                   </span>
                   <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
-                {/* Dropdown Menu */}
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-100">
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="font-semibold text-gray-900">{user?.fullName || 'User'}</p>
-                      <p className="text-sm text-gray-500">{user?.email || 'user@example.com'}</p>
+                      <p className="font-semibold text-gray-900">{user.fullName || 'User'}</p>
+                      <p className="text-sm text-gray-500">{user.email || 'user@example.com'}</p>
                     </div>
                     <button
                       onClick={handleProfileClick}
@@ -113,8 +111,22 @@ const Navbar = () => {
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      Profile
+                      Dashboard
                     </button>
+                    {user.role === 'admin' && (
+                      <button
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          navigate('/admin/dashboard');
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-blue-600 hover:bg-blue-50 transition-colors flex items-center gap-3"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Admin Panel
+                      </button>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-3"
@@ -145,7 +157,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -160,7 +171,6 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-100">
             {navItems.map((item) => (
@@ -174,15 +184,15 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="mt-4 pt-4 border-t border-gray-100">
-              {isAuthenticated ? (
+              {isAuthenticated && user ? (
                 <>
                   <div className="flex items-center gap-3 px-2 py-2">
                     <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
+                      {getInitials(user.fullName)}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{user?.fullName || 'User'}</p>
-                      <p className="text-sm text-gray-500">{user?.email || 'user@example.com'}</p>
+                      <p className="font-semibold text-gray-900">{user.fullName || 'User'}</p>
+                      <p className="text-sm text-gray-500">{user.email || 'user@example.com'}</p>
                     </div>
                   </div>
                   <button
@@ -192,7 +202,7 @@ const Navbar = () => {
                     }}
                     className="w-full text-left py-2 px-2 text-gray-700 hover:bg-gray-50 rounded-lg"
                   >
-                    Profile
+                    Dashboard
                   </button>
                   <button
                     onClick={() => {

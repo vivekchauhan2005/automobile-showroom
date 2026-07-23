@@ -6,19 +6,38 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useUser();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock login - in real app, this would call an API
-    const userData = {
-      fullName: 'John Doe',
-      email: email,
-      id: '1'
-    };
-    login(userData);
-    navigate('/');
+    setError('');
+    setLoading(true);
+
+    try {
+      const result = await login({ email, password });
+      
+      if (result.success) {
+        if (isAdminLogin && result.user.role !== 'admin') {
+          setError('You are not authorized as admin');
+          setLoading(false);
+          return;
+        }
+
+        if (isAdminLogin) {
+          window.location.href = '/admin/dashboard';
+        } else {
+          navigate('/');
+        }
+      }
+    } catch (err) {
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,20 +48,51 @@ const Login = () => {
             <span className="text-blue-600">LUXURY</span>
             <span className="text-gray-800"> MOTORS</span>
           </h1>
-          <h2 className="text-2xl font-semibold mt-6 text-gray-800">Sign In</h2>
+          <h2 className="text-2xl font-semibold mt-6 text-gray-800">
+            {isAdminLogin ? 'Admin Sign In' : 'Sign In'}
+          </h2>
         </div>
+
+        <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
+          <button
+            onClick={() => setIsAdminLogin(false)}
+            className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+              !isAdminLogin 
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            👤 Customer
+          </button>
+          <button
+            onClick={() => setIsAdminLogin(true)}
+            className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
+              isAdminLogin 
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            🔒 Admin
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600 text-center">{error}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Email Address
+              {isAdminLogin ? 'Admin Email' : 'Email Address'}
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-gray-50"
-              placeholder="Enter your email"
+              placeholder={isAdminLogin ? 'admin@luxurymotors.com' : 'Enter your email'}
               required
             />
           </div>
@@ -56,7 +106,7 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-gray-50"
-              placeholder="Enter your password"
+              placeholder={isAdminLogin ? 'Enter admin password' : 'Enter your password'}
               required
             />
           </div>
@@ -78,11 +128,23 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+            disabled={loading}
+            className="w-full py-3.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            LOGIN
+            {loading ? 'Logging in...' : (isAdminLogin ? 'LOGIN AS ADMIN' : 'LOGIN')}
           </button>
         </form>
+
+        {isAdminLogin && (
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-700 text-center">
+              🔑 Default admin: admin@luxurymotors.com / admin123
+            </p>
+            <p className="text-xs text-blue-500 text-center mt-1">
+              Only registered admin users can login
+            </p>
+          </div>
+        )}
 
         <div className="mt-6">
           <div className="relative">
@@ -106,11 +168,37 @@ const Login = () => {
         </div>
 
         <p className="text-center mt-6 text-sm text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-blue-600 hover:text-blue-800 font-semibold">
-            Register
-          </Link>
+          {isAdminLogin ? (
+            <>
+              Switch to{' '}
+              <button 
+                onClick={() => setIsAdminLogin(false)}
+                className="text-blue-600 hover:text-blue-800 font-semibold"
+              >
+                Customer Login
+              </button>
+            </>
+          ) : (
+            <>
+              Don't have an account?{' '}
+              <Link to="/register" className="text-blue-600 hover:text-blue-800 font-semibold">
+                Register
+              </Link>
+            </>
+          )}
         </p>
+
+        {!isAdminLogin && (
+          <p className="text-center mt-2 text-xs text-gray-400">
+            Admin?{' '}
+            <button 
+              onClick={() => setIsAdminLogin(true)}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Login as Admin
+            </button>
+          </p>
+        )}
       </div>
     </div>
   );

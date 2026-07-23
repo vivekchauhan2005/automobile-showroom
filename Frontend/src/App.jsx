@@ -11,8 +11,6 @@ import Contact from './pages/Contact/Contact';
 import About from './pages/About/About';
 import Compare from './pages/Compare/Compare';
 import Dashboard from './pages/Dashboard/Dashboard';
-
-// Import all dashboard components from components folder
 import MyProfile from './components/Dashboard/MyProfile';
 import MyBookings from './components/Dashboard/MyBookings';
 import MyTestDrives from './components/Dashboard/MyTestDrives';
