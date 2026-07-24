@@ -15,6 +15,7 @@ const Navbar = () => {
     { label: 'Test Drive', path: '/test-drive' },
     { label: 'Contact', path: '/contact' },
     { label: 'About', path: '/about' },
+    { label: 'Compare', path: '/compare' },
   ];
 
   useEffect(() => {

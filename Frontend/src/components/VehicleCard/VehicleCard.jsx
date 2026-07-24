@@ -69,12 +69,12 @@ const VehicleCard = ({ vehicle }) => {
           >
             View Details
           </button>
-          <button 
-            onClick={() => navigate('/test-drive')}
-            className="flex-1 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-semibold text-sm"
-          >
-            Test Drive
-          </button>
+         <button
+  onClick={() => navigate(`/compare/${id}`)}
+  className="flex-1 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition-colors font-semibold text-sm"
+>
+  Compare
+</button>
         </div>
       </div>
     </div>
